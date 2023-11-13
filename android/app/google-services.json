@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "33396415926",
+    "project_id": "eaglemachines-7eba5",
+    "storage_bucket": "eaglemachines-7eba5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:33396415926:android:6be166a3e80c97d1e07517",
+        "android_client_info": {
+          "package_name": "com.eagle.adminmain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALTt9p0LUYHVWpSR9GRRNeklBiUrwMwe4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
