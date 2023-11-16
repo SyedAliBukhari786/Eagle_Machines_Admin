@@ -11,175 +11,177 @@ class Clients extends StatefulWidget {
 class _ClientsState extends State<Clients> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        child: Column(
-          children: [
-            Expanded(
-              flex: 1,
-              child: Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Clients",
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.08,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
+          height: double.infinity,
+          width: double.infinity,
+          child: Column(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Container(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Clients",
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width * 0.08,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 2),
-                    Container(
-                      height: MediaQuery.of(context).size.width * 0.09,
-                      width: MediaQuery.of(context).size.width * 0.09,
-                      child: Image.asset(
-                        "assets/ipo.png",
-                        fit: BoxFit.cover,
+                      SizedBox(width: 2),
+                      Container(
+                        height: MediaQuery.of(context).size.width * 0.09,
+                        width: MediaQuery.of(context).size.width * 0.09,
+                        child: Image.asset(
+                          "assets/ipo.png",
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 9,
-              child: Container(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('clients').snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Center(child: CircularProgressIndicator());
-                    }
+              Expanded(
+                flex: 9,
+                child: Container(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('clients').snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(child: CircularProgressIndicator());
+                      }
 
-                    var clients = snapshot.data!.docs;
+                      var clients = snapshot.data!.docs;
 
-                    return ListView.builder(
-                      itemCount: clients.length,
-                      itemBuilder: (context, index) {
-                        var clientData = clients[index].data() as Map<String, dynamic>;
-                        var documentId = clients[index].id;
+                      return ListView.builder(
+                        itemCount: clients.length,
+                        itemBuilder: (context, index) {
+                          var clientData = clients[index].data() as Map<String, dynamic>;
+                          var documentId = clients[index].id;
 
-                        return Container(
-                          margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                          padding: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Center(
-                                child: Text(
-                                  clientData['companyname'],
+                          return Container(
+                            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Center(
+                                  child: Text(
+                                    clientData['companyname'],
+                                    style: TextStyle(
+                                      fontSize: MediaQuery.of(context).size.width * 0.07,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "NAME: ",
                                   style: TextStyle(
-                                    fontSize: MediaQuery.of(context).size.width * 0.07,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                Text(
+                                  clientData['name'],
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
                                     color: Colors.black,
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                "NAME: ",
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Text(
-                                clientData['name'],
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Text(
-                                "CONTACT: ",
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Text(
-                                clientData['contact'],
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Text(
-                                "CITY: ",
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Text(
-                                clientData['city'],
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Text(
-                                "ADDRESS: ",
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Text(
-                                clientData['address'],
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Text(
-                                "EMAIL: ",
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              Text(
-                                clientData['email'],
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width * 0.035,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.edit, color: Colors.green),
-                                    onPressed: () {
-                                      _editClient(clientData, documentId);
-                                    },
+                                Text(
+                                  "CONTACT: ",
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.green,
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () {
-                                      _deleteClient(clientData, documentId);
-                                    },
+                                ),
+                                Text(
+                                  clientData['contact'],
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.black,
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
+                                ),
+                                Text(
+                                  "CITY: ",
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                Text(
+                                  clientData['city'],
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  "ADDRESS: ",
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                Text(
+                                  clientData['address'],
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  "EMAIL: ",
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                                Text(
+                                  clientData['email'],
+                                  style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit, color: Colors.green),
+                                      onPressed: () {
+                                        _editClient(clientData, documentId);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () {
+                                        _deleteClient(clientData, documentId);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
