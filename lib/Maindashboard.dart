@@ -15,6 +15,8 @@ class _dashboardState extends State<dashboard> {
   TextEditingController dailyController = TextEditingController();
   TextEditingController hoursController = TextEditingController();
   TextEditingController Capacity = TextEditingController();
+  final CollectionReference ratesCollection =
+  FirebaseFirestore.instance.collection('ratesperhour');
   int value = 1;
   @override
   void initState() {
@@ -509,11 +511,10 @@ class _dashboardState extends State<dashboard> {
                   SizedBox(height: 10,),
 
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Expanded(
-                        flex: 3,
-                        child: Padding(
+
+                        Padding(
                           padding: const EdgeInsets.only(left: 4.0),
                           child: GestureDetector(
                             onTap: () {
@@ -523,6 +524,10 @@ class _dashboardState extends State<dashboard> {
                             },
                             child: Container(
                               height: MediaQuery
+                                  .of(context)
+                                  .size
+                                  .width * 0.25,
+                              width: MediaQuery
                                   .of(context)
                                   .size
                                   .width * 0.25,
@@ -572,11 +577,12 @@ class _dashboardState extends State<dashboard> {
                             ),
                           ),
                         ),
-                      ),
+
 
 
                     ],
                   ),
+
                   if (isLoading)
                     Container(
 
@@ -584,6 +590,77 @@ class _dashboardState extends State<dashboard> {
                         child: CircularProgressIndicator(),
                       ),
                     ),
+                  SizedBox(height: 10,),
+
+                  Container(
+                   // color: Colors.red,
+                    height: MediaQuery.of(context).size.height*0.8,
+                    child: Column(
+                      children: [
+                        Text("Rates Management", style: TextStyle(fontSize: MediaQuery.of(context).size.width*0.07),),
+                        SizedBox(height: 10,),
+                        Expanded(
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: ratesCollection.snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                return ListView.builder(
+                                  itemCount: snapshot.data!.docs.length,
+                                  itemBuilder: (context, index) {
+                                    var data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                                    return Container(
+                                      padding: EdgeInsets.all(16.0),
+                                      margin: EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.grey),
+                                        borderRadius: BorderRadius.circular(8.0),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          _buildText('Rate Per Hour:', data['Rate_Per_Hour'], valueColor: Colors.green),
+                                          _buildText('Monthly Rate:', data['Monthly_Rate'], valueColor: Colors.green),
+                                          _buildText('Daily Rate:', data['Daily_Rate'], valueColor: Colors.green),
+                                          _buildText('Minimum Hours:', data['Minimum_Hours'], valueColor: Colors.green),
+                                          _buildText('Capacity:', data['Capacity'], valueColor: Colors.green),
+                                          _buildText('Category:', data['Category'], valueColor: Colors.green),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons.edit, color: Colors.green),
+                                                onPressed: () {
+                                                  // Handle edit button press
+                                                  _showEditDialog(context, data, snapshot.data!.docs[index].id);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: Icon(Icons.delete, color: Colors.red),
+                                                onPressed: () {
+                                                  _showDeleteConfirmationDialog(context, snapshot.data!.docs[index].id);
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            },
+                          ),
+                        ),
+
+                      ],
+                    ),
+
+                  )
+
 
                 ],
 
@@ -599,5 +676,277 @@ class _dashboardState extends State<dashboard> {
 
       );
     }
+
+
+  Widget buildInfoTile(String label, dynamic value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Text(
+          '$value',
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
+    );
+  }
+  Widget _buildText(String label, dynamic value, {Color valueColor = Colors.black}) {
+    return Row(
+      children: [
+        Text(
+          '$label',
+          style: TextStyle(color: Colors.black),
+        ),
+        Text(
+          ' ${value.toString()}',
+          style: TextStyle(color: valueColor),
+        ),
+      ],
+    );
   }
 
+
+  void _showDeleteConfirmationDialog(BuildContext context, String documentId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Confirmation'),
+          content: Text('Are you sure you want to delete this item?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Call the function to delete the document
+                _deleteDocument(documentId);
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteDocument(String documentId) {
+    // Call the Firebase delete function here using documentId
+    ratesCollection.doc(documentId).delete();
+
+  }
+
+  void fetchData() {
+    // Assuming you want to fetch data from Firestore and update the state
+    // You can use StreamBuilder or FutureBuilder or any other method
+    // to fetch the data and update the state of your widget
+    // Example using FutureBuilder:
+
+    FutureBuilder<QuerySnapshot>(
+      future: ratesCollection.get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          // Update the state with the fetched data
+          // setState(() {
+          //   // Your state update logic here
+          // });
+          return ListView.builder(
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              var data = snapshot.data!.docs[index].data() as Map<String, dynamic>;
+              return Container(
+                padding: EdgeInsets.all(16.0),
+                margin: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildText('Rate Per Hour:', data['Rate_Per_Hour'], valueColor: Colors.green),
+                    _buildText('Monthly Rate:', data['Monthly_Rate'], valueColor: Colors.green),
+                    _buildText('Daily Rate:', data['Daily_Rate'], valueColor: Colors.green),
+                    _buildText('Minimum Hours:', data['Minimum_Hours'], valueColor: Colors.green),
+                    _buildText('Capacity:', data['Capacity'], valueColor: Colors.green),
+                    _buildText('Category:', data['Category'], valueColor: Colors.green),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit, color: Colors.green),
+                          onPressed: () {
+                            // Handle edit button press
+
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(context, snapshot.data!.docs[index].id);
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+  void _showEditDialog(BuildContext context, Map<String, dynamic> data, String documentId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Rate'),
+          content: EditRateDialogContent(data: data, documentId: documentId),
+        );
+      },
+    );
+  }
+}
+
+
+
+class EditRateDialogContent extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final String documentId;
+
+  EditRateDialogContent({required this.data, required this.documentId});
+
+  @override
+  _EditRateDialogContentState createState() => _EditRateDialogContentState();
+}
+
+class _EditRateDialogContentState extends State<EditRateDialogContent> {
+  final CollectionReference ratesCollection =
+  FirebaseFirestore.instance.collection('ratesperhour');
+
+  TextEditingController ratePerHourController = TextEditingController();
+  TextEditingController monthlyRateController = TextEditingController();
+  TextEditingController dailyRateController = TextEditingController();
+  TextEditingController minimumHoursController = TextEditingController();
+  TextEditingController capacityController = TextEditingController();
+
+  String category = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize controllers with existing data
+    ratePerHourController.text = widget.data['Rate_Per_Hour'].toString();
+    monthlyRateController.text = widget.data['Monthly_Rate'].toString();
+    dailyRateController.text = widget.data['Daily_Rate'].toString();
+    minimumHoursController.text = widget.data['Minimum_Hours'].toString();
+    capacityController.text = widget.data['Capacity'].toString();
+    category = widget.data['Category'];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTextField('Rate Per Hour', ratePerHourController),
+          _buildTextField('Monthly Rate', monthlyRateController),
+          _buildTextField('Daily Rate', dailyRateController),
+          _buildTextField('Minimum Hours', minimumHoursController),
+          _buildTextField('Capacity', capacityController),
+          _buildCategoryRadioButtons(),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              _updateRateData();
+            },
+            child: Text('Update'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          labelText: label,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryRadioButtons() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Category'),
+        Row(
+          children: [
+            Radio(
+              value: 'Forklift',
+              groupValue: category,
+              onChanged: (value) {
+                setState(() {
+                  category = value.toString();
+                });
+              },
+            ),
+            Text('Forklift'),
+            Radio(
+              value: 'Crane',
+              groupValue: category,
+              onChanged: (value) {
+                setState(() {
+                  category = value.toString();
+                });
+              },
+            ),
+            Text('Crane'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _updateRateData() {
+    ratesCollection.doc(widget.documentId).update({
+      'Rate_Per_Hour': int.parse(ratePerHourController.text),
+      'Monthly_Rate': int.parse(monthlyRateController.text),
+      'Daily_Rate': int.parse(dailyRateController.text),
+      'Minimum_Hours': int.parse(minimumHoursController.text),
+      'Capacity': int.parse(capacityController.text),
+      'Category': category,
+    }).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rate updated successfully')),
+
+      );
+      Navigator.of(context).pop();
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update rate: $error')),
+      );
+    });
+  }
+}

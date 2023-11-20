@@ -204,6 +204,8 @@ class _DriversState extends State<Drivers> {
                                   },
                                 );
                               },
+                              driver: driver,
+                              firestore: _firestore,
                             );
                           },
                         );
@@ -437,13 +439,18 @@ class DriverCard extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
+  final QueryDocumentSnapshot driver;
+  final FirebaseFirestore firestore;// Add this line to receive the driver document
+
   DriverCard({
     required this.email,
     required this.name,
     required this.contact,
-
     required this.onDelete,
     required this.onEdit,
+    required this.driver,
+    required this.firestore
+
   });
 
   @override
@@ -468,11 +475,11 @@ class DriverCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   ' Driver Details',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: MediaQuery.of(context).size.width*0.05),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: MediaQuery.of(context).size.width * 0.05),
                 ),
               ],
             ),
@@ -483,13 +490,69 @@ class DriverCard extends StatelessWidget {
             SizedBox(height: 16),
             Center(
               child: Container(
-                height: 200,
-                width: 200,
-                color: Colors.green,
-                child: Center(child: Text("Machines data")),
+                decoration: BoxDecoration(
+                  color: Colors.transparent, // Set to transparent
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
 
+                   bottomLeft: Radius.circular(10),
+                   bottomRight: Radius.circular(10),
+                  ),
+                  border: Border.all(color: Colors.green), // Set border color to green
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: firestore.collection('machines').where('Driver_id', isEqualTo: driver.id).snapshots(),
+                    builder: (context, machineSnapshot) {
+                      if (machineSnapshot.hasError) {
+                        return Text('Error: ${machineSnapshot.error}');
+                      }
+
+                      if (machineSnapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+
+                      List<QueryDocumentSnapshot> machines = machineSnapshot.data!.docs;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Operating Machines',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Colors.green, // Set text color to green
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          // Display machines data here
+                          for (var machine in machines)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Category: ${machine['Category']}',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Text(
+                                  'Registration Number: ${machine['RegistrationNumber']}',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                SizedBox(height: 8),
+                              ],
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
+
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -507,5 +570,4 @@ class DriverCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
+  }}
