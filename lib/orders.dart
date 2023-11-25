@@ -1,3 +1,5 @@
+
+import 'package:eaglemachinesadminmain/driver_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -180,7 +182,7 @@ class _OrdersState extends State<Orders> {
                 itemBuilder: (context, index) {
                   return Builder(
                     builder: (context) {
-                      return OrderDetailsWidget(order: orders[index], selected_button: Selectedbutton,);
+                      return OrderDetailsWidget(order: orders[index], selected_button: Selectedbutton, fetchOrders: () { fetchOrders(); },);
                     }
                   );
                 },
@@ -196,16 +198,31 @@ class _OrdersState extends State<Orders> {
 class OrderDetailsWidget extends StatelessWidget {
   final Order order;
   final String selected_button;
+  final VoidCallback fetchOrders;
+
 
   OrderDetailsWidget({
 
     required this.order,
-    required this.selected_button
+    required this.selected_button,
+    required this.fetchOrders,
+
 
   });
 
+
+
   @override
   Widget build(BuildContext context) {
+
+    void showSnackbar(String message, Color color) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: color,
+        ),
+      );
+    }
     return GestureDetector(
       onTap: () {
         // Implement onTap functionality, e.g., navigation or edit mode
@@ -230,25 +247,89 @@ class OrderDetailsWidget extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 8.0),
-              _buildEditableField(context, 'Category', order.category, selected_button),
+              _buildEditableField(context, 'Category', order.category, selected_button, order.id),
               _buildEditableField(
-                  context, 'Timestamp', formatDateTime(order.timestamp),selected_button),
+                  context, 'Timestamp', formatDateTime(order.timestamp),selected_button, order.id),
               _buildEditableField(
-                  context, 'Capacity', order.capacity.toString(),selected_button),
-              _buildEditableField(context, 'Daily Basis', order.dailyBasis,selected_button),
-              _buildEditableField(context, 'Monthly Basis', order.monthlyBasis,selected_button),
+                  context, 'Capacity', order.capacity.toString(),selected_button, order.id),
+              _buildEditableField(context, 'Daily Basis', order.dailyBasis,selected_button, order.id),
+              _buildEditableField(context, 'Monthly Basis', order.monthlyBasis,selected_button, order.id),
               _buildEditableField(context, 'Order Starting Time',
-                  formatTime(order.orderStartingTime),selected_button),
+                  formatTime(order.orderStartingTime),selected_button, order.id),
               _buildEditableField(context, 'Order Starting Date',
-                  formatDate(order.orderStartingDate),selected_button),
+                  formatDate(order.orderStartingDate),selected_button, order.id),
               _buildEditableField(
-                  context, 'Total Hours', order.totalHours.toString(),selected_button),
-              _buildEditableField(context, 'Address', order.address,selected_button),
-              _buildEditableField(context, 'Coordinates', order.coordinates,selected_button),
-              _buildEditableField(context, 'Status', order.status,selected_button),
+                  context, 'Total Hours', order.totalHours.toString(),selected_button, order.id),
+              _buildEditableField(context, 'Address', order.address,selected_button, order.id),
+              _buildEditableField(context, 'Coordinates', order.coordinates,selected_button, order.id),
+              _buildEditableField(context, 'Status', order.status,selected_button, order.id),
               _buildEditableField(
-                  context, 'Total Bill', order.totalBill.toString(),selected_button),
-              _buildEditableField(context, 'Payment', order.payment,selected_button),
+                  context, 'Total Bill', order.totalBill.toString(),selected_button, order.id),
+              _buildEditableField(context, 'Payment', order.payment,selected_button, order.id),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  Container(
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    height: 40,
+                    child: ElevatedButton(
+                        onPressed: () async {
+
+                          CollectionReference collectionRef = FirebaseFirestore.instance.collection("Orders");
+
+                          // Reference to the document
+                          DocumentReference documentRef = collectionRef.doc(order.id);
+                          if(selected_button=="New Orders"){
+                            await documentRef.update({
+                              "Status": "REJECTED",
+                            });
+                            showSnackbar("REJECTED", Colors.red);
+                           fetchOrders();
+                          }else {
+                            await documentRef.delete();
+                            showSnackbar("DELETED", Colors.red);
+                            fetchOrders();
+                          }
+
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary:
+                          Colors.white,
+
+                          onPrimary:
+                          Colors.red,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                        ),
+                        child:  Text(selected_button=="New Orders"?"Reject":"Delete")),
+                  ),
+                  SizedBox(width: 10,),
+                  (selected_button=="New Orders")? Container(
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    height: 40,
+                    child: ElevatedButton(
+                        onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder:  (context) => DriverSelection(documentId: order.id)));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary:
+                               Colors.green,
+
+                          onPrimary:
+                               Colors.white,
+
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                        ),
+                        child: Text("Confirm")),
+                  ):SizedBox(),
+                ],
+              ),
+
             ],
           ),
         ),
@@ -268,15 +349,11 @@ class OrderDetailsWidget extends StatelessWidget {
     return DateFormat('h:mm a').format(dateTime.toLocal());
   }
 
-  Widget _buildEditableField(BuildContext context, String label, String value , String Selected_button) {
+  Widget _buildEditableField(BuildContext context, String label, String value , String Selected_button, String documnt_id) {
     return InkWell(
       onTap: () {
         // Show Snackbar indicating the clicked field for editing
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Editing $label'),
-          ),
-        );
+
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -286,10 +363,57 @@ class OrderDetailsWidget extends StatelessWidget {
             Row(
               children: [
                 (Selected_button=="New Orders")? GestureDetector(onTap: () {
+// category not working
+                  if(label=="Category"){
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        String selectedCategory = value;
+
+                        return AlertDialog(
+                          title: Text('Select Category'),
+                          content: Row(
+                            children: [
+                              Radio(
+                                value: 'Forklift',
+                                groupValue: selectedCategory,
+                                onChanged: (value) {
+                                  selectedCategory = value as String;
+                                },
+                              ),
+                              Text('Forklift'),
+                              Radio(
+                                value: 'Crane',
+                                groupValue: selectedCategory,
+                                onChanged: (value) {
+                                  selectedCategory = value as String;
+                                },
+                              ),
+                              Text('Crane'),
+                            ],
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                // Update the value in the Firebase collection
+                                await FirebaseFirestore.instance.collection('Orders').doc(documnt_id).update({
+                                  'Category': selectedCategory,
+                                });
+
+                                Navigator.pop(context); // Close the dialog
+                              },
+                              child: Text('Update'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
 
 
-                },child: Icon(Icons.edit)): SizedBox(),
 
+
+                  }
+                  },child: Icon(Icons.edit)): SizedBox(),
                 SizedBox(width: 8.0),
                 Text(
                   '$label:',
@@ -441,3 +565,7 @@ class Order {
     );
   }
 }
+
+
+
+

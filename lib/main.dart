@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
     Widget firstWidget;
 
     if (firebaseUser != null) {
-      firstWidget = Dashboard();
+      firstWidget = BottomNavBar();
     } else {
       firstWidget = Login();
     }

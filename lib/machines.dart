@@ -547,6 +547,7 @@ class _MachinesState extends State<Machines> {
                                          'Driver_id': driverid,
                                          'Category': selectedCategory,
                                          'Quardinates': "NULL",
+                                         'Status': "Free",
                                          // Add other fields if needed
                                        });
 

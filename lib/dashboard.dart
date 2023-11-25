@@ -1,4 +1,6 @@
 
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:eaglemachinesadminmain/clients.dart';
 import 'package:eaglemachinesadminmain/payments.dart';
 import 'package:flutter/material.dart';
@@ -9,76 +11,93 @@ import 'machines.dart';
 import 'orders.dart';
 
 
-
-
-
-class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
-
+class BottomNavBar extends StatefulWidget {
   @override
-  State<Dashboard> createState() => _DashboardState();
+  _BottomNavBarState createState() => _BottomNavBarState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = [
-    dashboard(),
-    Machines(),
-    Drivers(),
-    Orders(),
-    Payments(),
-    Clients(),
-    Dashboard(),
-  ];
+class _BottomNavBarState extends State<BottomNavBar> {
+  int _page = 2; // Set the initial index to 2 for the "Home" icon
+  GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
 
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+
+    List<Widget> _pages = [
+      Machines(),
+      Clients(),
+      dashboard(),
+      Drivers(),
+      Orders(),
+      Payments(),
+
+
+    ];
+
+    List<Color> _iconColors = [
+      Colors.green, // About
+      Colors.green, // Media
+      Colors.green, // Home
+      Colors.green, // Contact
+      Colors.green, // Home
+      Colors.green,
+    ];
+
+    return Scaffold(
+      bottomNavigationBar: CurvedNavigationBar(
+        key: _bottomNavigationKey,
+        index: _page,
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bus_alert_outlined),
+
+          CurvedNavigationBarItem(
+            child: Icon(Icons.bus_alert_outlined,color: _iconColors[0]),
             label: 'Machines',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+
+          CurvedNavigationBarItem(
+            child: Icon(Icons.person,color: _iconColors[0]),
+            label: 'Client',
+          ),
+          CurvedNavigationBarItem(
+            child: Icon(Icons.dashboard_outlined , color: _iconColors[0],),
+            label: 'Dashboard',
+          ),
+
+          CurvedNavigationBarItem(
+            child: Icon(Icons.person,color: _iconColors[0]),
             label: 'Drivers',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.electric_bolt),
+          CurvedNavigationBarItem(
+            child: Icon(Icons.electric_bolt,color: _iconColors[0]),
             label: 'Orders',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.money),
-            label: 'Payments',
+
+          CurvedNavigationBarItem(
+            child: Icon(Icons.monetization_on_outlined,color: _iconColors[0]),
+            label: 'Bills',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Clients',
-          ),
+
 
 
         ],
+        color: Colors.white,
+        buttonBackgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        animationCurve: Curves.easeInOut,
+        animationDuration: Duration(milliseconds: 600),
+        onTap: (index) {
+          setState(() {
+            _page = index;
+            _iconColors = List.generate(5, (i) => i == index ? Colors.green : Colors.grey);
+          });
+        },
+        letIndexChange: (index) => true,
       ),
+      body:  _pages[_page],
     );
   }
 }
-
-
 
 
 

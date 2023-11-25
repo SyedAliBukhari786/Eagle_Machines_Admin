@@ -45,7 +45,7 @@ class _LoginState extends State<Login> {
         // If login is successful, you can navigate to the next screen or perform other actions.
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Dashboard()),
+          MaterialPageRoute(builder: (context) => BottomNavBar()),
         );
         print("Login successful: ${userCredential.user?.email}");
       } on FirebaseAuthException catch (e) {
@@ -80,12 +80,12 @@ class _LoginState extends State<Login> {
                       child: Container(
                         height: ScreenHeight * 0.3,
                         width: ScreenWidth * 0.6,
-                        color: Colors.red,
-                        child: Center(child: Text("Logo", style: GoogleFonts.merriweather())),
+                        //color: Colors.red,
+                        child: Center(child: Image.asset("assets/eaglemachineslogo.png")),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 30),
+                      padding: const EdgeInsets.only(top: 4),
                       child: Container(
                         child: Center(
                           child: Text(

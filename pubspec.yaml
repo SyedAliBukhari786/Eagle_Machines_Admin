@@ -40,6 +40,8 @@ dependencies:
   google_fonts: ^6.1.0
   firebase_ui_firestore: ^1.5.13
   intl: ^0.18.1
+  percent_indicator: ^4.2.3
+  curved_labeled_navigation_bar: ^2.0.2
 
 dev_dependencies:
   flutter_test:
